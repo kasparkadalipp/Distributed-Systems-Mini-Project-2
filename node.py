@@ -44,10 +44,6 @@ class Node(protocol_pb2_grpc.BookStoreServiceServicer):
             prompt = user_input[17:].strip()
             # TODO
 
-
-    def list_books(self):
-
-
 class Book:
     def __init__(self, name, price):
         self.name = name
