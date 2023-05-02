@@ -7,7 +7,7 @@ import protocol_pb2_grpc
 
 class Node(protocol_pb2_grpc.BookStoreServiceServicer):
     def __init__(self, node_id, port):
-        self.dataStoreList = []
+        self.dataStoreList :list[DataStore] = []
         self.node_id = node_id
         print(f"Starting node '{node_id}', listening on '{port}'")
         # TODO start node
@@ -45,9 +45,30 @@ class Node(protocol_pb2_grpc.BookStoreServiceServicer):
             # TODO
 
 
-class DataStore():
+    def list_books(self):
+
+
+class Book:
+    def __init__(self, name, price):
+        self.name = name
+        self.price = price
+        self.isClean = False
+
+class DataStore:
     def __init__(self, node_id, process_id):
-        self.name = f"Node{node_id}-ps{id}"
+        self.name = f"Node{node_id}-ps{process_id}"
+        self.bookList :list[Book] = []
+        self.nextInChain = None
+
+    def writeOperation(self, name, price):
+        self.bookList[name] = Book(name, price)
+        # TODO start time-out timer
+
+    def readOperation(self, name):
+        if name not in self.bookList:
+            print("Not yet in the stock")
+        else:
+            print(f"{name} = {self.bookList[name].price}")
 
 def main():
     if not len(sys.argv) == 2:
