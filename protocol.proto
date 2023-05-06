@@ -1,5 +1,63 @@
 syntax = "proto3";
 
 service BookStoreService {
+    // updates entry for book price
+    rpc Write(WriteRequest) returns (WriteResponse) {}
 
+    // fetches entries for book prices
+    rpc Read(ReadRequest) returns (ReadResponse) {}
+
+    // fetches all entries for book prices
+    rpc List(ListRequest) returns (ListResponse) {}
+
+}
+
+message WriteRequest {
+    // name of the book
+    string book = 1;
+
+    // price in Euro cents
+    int64 price = 2;
+}
+
+message WriteResponse {
+    BookEntry entry = 1;
+}
+
+message ReadRequest {
+    // name of the book
+    repeated string books = 1;
+
+    // If allow_dirty if true, then node might return dirty reads.
+    // If allow_dirty is false, node will only return clean reads, i.e. node will issue request for unclean entries from tail to gather version information.
+    bool allow_dirty = 2;
+}
+
+message ReadResponse {
+    repeated BookEntry entries = 1;
+}
+
+// Implementation detail: Can internally re-use ReadRequest, by just adding all book names to the request that the node is aware of (works, as we never remove any book names, thus dirty node will always have all book names that the tail also has).
+message ListRequest {
+    // If allow_dirty if true, then node might return dirty reads.
+    // If allow_dirty is false, node will only return clean reads, i.e. node will issue request for unclean entries from tail to gather version information.
+    bool allow_dirty = 2;
+}
+
+message ListResponse {
+    repeated BookEntry entries = 1;
+}
+
+message BookEntry {
+    // name of the book
+    string book = 1;
+
+    // price in Euro cents
+    int64 price = 2;
+
+    // version of the entry, where version 0 means entry does not exist
+    int64 version = 3;
+
+    // true if read is clean, i.e. response from tail has been propagated back to node for most recent write operation
+    bool clean = 4;
 }
