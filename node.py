@@ -1,11 +1,11 @@
 import sys
 import threading
 
-import protocol_pb2
-import protocol_pb2_grpc
+import bookshop_pb2
+import bookshop_pb2_grpc
 
 
-class Node(protocol_pb2_grpc.BookStoreServiceServicer):
+class Node(bookshop_pb2_grpc.BookShopServicer):
     def __init__(self, node_id, port):
         self.dataStoreList :list[DataStore] = []
         self.node_id = node_id
@@ -21,8 +21,6 @@ class Node(protocol_pb2_grpc.BookStoreServiceServicer):
                 pass  # TODO
             case 'List-books':
                 pass  # TODO
-            case 'Read-operation':
-                pass  # TODO
             case 'Data-status':
                 pass  # TODO
             case 'Remove-head':
@@ -33,6 +31,9 @@ class Node(protocol_pb2_grpc.BookStoreServiceServicer):
         if user_input.startswith('Local-store-ps'):  # <k processes>
             k_processes = int(user_input[14:])
             self.dataStoreList = (DataStore(self.node_id, process_id) for process_id in range(1, k_processes+1))
+        elif user_input.startswith('Read-operation'):  # <k processes>
+            bookName = user_input[14:]
+            # TODO
         elif user_input.startswith('Write-operation'):  # <Book, Price>
             name, price = user_input[15:].split(',')
             price = float(price)
