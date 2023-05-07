@@ -2,146 +2,78 @@ syntax = "proto3";
 
 package bookshop;
 
-service BookShop {
-  rpc LocalStorePs (LocalStorePsRequest) returns (LocalStorePsResponse) {}
-  rpc CreateChain (CreateChainRequest) returns (CreateChainResponse) {}
-  rpc ListChain (ListChainRequest) returns (ListChainResponse) {}
-  rpc WriteOperation (WriteOperationRequest) returns (WriteOperationResponse) {}
-  rpc ListBooks (ListBooksRequest) returns (ListBooksResponse) {}
-  rpc ReadOperation (ReadOperationRequest) returns (ReadOperationResponse) {}
-  rpc DataStatus (DataStatusRequest) returns (DataStatusResponse) {}
-  rpc RemoveHead (RemoveHeadRequest) returns (RemoveHeadResponse) {}
+service NodeService {
+  // broadcasted to all nodes after creation of new chain
+  rpc BroadcastChain (BroadcastChainRequest) returns (BroadcastChainResponse) {}
+
+  // broadcasted to all nodes indicating that current head should be removed from the chain
+  rpc BroadcastRemoveHead (BroadcastRemoveHeadRequest) returns (BroadcastRemoveHeadResponse) {}
+
+  // broadcasted to all nodes after recently removed head has been restored and can be added back to the chain
+  rpc BroadcastRestoreHead (BroadcastRestoreHeadRequest) returns (BroadcastRestoreHeadResponse) {}
+}
+
+message BroadcastChainRequest {
+  repeated Datastore chain = 1;
+}
+
+message BroadcastChainResponse {}
+
+message BroadcastRemoveHeadRequest {}
+message BroadcastRemoveHeadResponse {}
+
+message BroadcastRestoreHeadRequest {}
+message BroadcastRestoreHeadResponse {}
+
+message Datastore {
+  uint64 node_id = 1;
+  uint64 process_id = 2;
+  string address = 3;
+}
+
+service DatastoreService {
+  rpc Write(WriteRequest) returns (WriteResponse) {}
+  rpc Read(ReadRequest) returns (ReadResponse) {}
+  rpc List(ListRequest) returns (ListResponse) {}
+
+  // request to datastore to sync up and re-add itself as master
   rpc RestoreHead (RestoreHeadRequest) returns (RestoreHeadResponse) {}
-  rpc GetLeader (GetLeaderRequest) returns (GetLeaderResponse) {}
-  rpc PropagateWrite(PropagateWriteRequest) returns (PropagateWriteResponse) {}
-  rpc ReplicatedWriteOperation(WriteOperationRequest) returns (ReplicatedWriteOperationResponse) {}
-  rpc ReplicatedLocalStorePs(LocalStorePsRequest) returns (ReplicatedLocalStorePsResponse) {}
-  rpc ReplicatedCreateChain(CreateChainRequest) returns (ReplicatedCreateChainResponse) {}
-  rpc ReplicatedRemoveHead(RemoveHeadRequest) returns (ReplicatedRemoveHeadResponse) {}
-  rpc ReplicatedRestoreHead(RestoreHeadRequest) returns (ReplicatedRemoveHeadResponse) {}
 }
 
-message PropagateWriteRequest {
-    string book = 1;
-    float price = 2;
-}
-
-message Process {
-    string process_id = 1;
-    string node_id = 2;
-}
-
-message PropagateWriteResponse {
-    string result = 1;
-}
-
-message LocalStorePsRequest {
-  int32 num_processes = 1;
-}
-
-message LocalStorePsResponse {
-  repeated string process_ids = 1;
-}
-
-message CreateChainRequest {
-  bool force = 1;
-}
-
-message CreateChainResponse {
-  string result = 1;
-}
-
-message ListChainRequest {
-}
-
-message ListChainResponse {
-  string chain = 1;
-}
-
-message WriteOperationRequest {
+message WriteRequest {
   string book = 1;
-  double price = 2;
+  float price = 2;
 }
 
-message WriteOperationResponse {
-  string result = 1;
+message WriteResponse {
+  Book book = 1;
 }
 
-message ListBooksRequest {
+message ReadRequest {
+  repeated string books = 1;
+  bool allow_dirty = 2;
 }
 
-message Book {
-  string name = 1;
-  double price = 2;
-}
-
-message ListBooksResponse {
+message ReadResponse {
   repeated Book books = 1;
 }
 
-message ReadOperationRequest {
-  string book = 1;
+message ListRequest {
+  bool allow_dirty = 2;
 }
 
-message ReadOperationResponse {
-  double price = 1;
-  string message = 2;
+message ListResponse {
+  repeated Book books = 1;
 }
 
-message DataStatusRequest {
-}
-
-message ProcessStatus {
-  string process_id = 1;
-  repeated string dirty_books = 2;
-}
-
-message DataStatusResponse {
-  repeated ProcessStatus status = 1;
-}
-
-message RemoveHeadRequest {
-}
-
-message RemoveHeadResponse {
-  string result = 1;
-}
-
-message RestoreHeadRequest {
-}
+message RestoreHeadRequest {}
 
 message RestoreHeadResponse {
-  string result = 1;
+  bool successful = 1;
 }
 
-message GetLeaderRequest {
-}
-
-message GetLeaderResponse {
-  string leader_id = 1;
-  bool is_leader = 2;
-}
-
-message ReplicatedWriteOperationResponse {
-    string result = 1;
-}
-
-message ReplicatedLocalStorePsResponse {
-    repeated string process_ids = 1;
-}
-
-message ReplicatedCreateChainResponse {
-    string result = 1;
-}
-
-message ReplicatedRemoveHeadResponse {
-    string result = 1;
-}
-
-message ReplicatedRestoreHeadResponse {
-    string result = 1;
-}
-
-message ReplicatedRestoreHeadRequest {
-    string process_id = 1;
+message Book {
+  string book = 1;
+  float price = 2;
+  bool dirty = 3;
 }
