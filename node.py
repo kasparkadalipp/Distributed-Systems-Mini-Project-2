@@ -134,7 +134,7 @@ class Node(bookshop_pb2_grpc.NodeServiceServicer):
                     print("No books in stock")
                 else:
                     for i, book in enumerate(response.books):
-                        print("{:d}) {} = {:.2f}".format(i, book.book, book.price))
+                        print("{:d}) {} = {:.2f}".format(i+1, book.book, book.price))
             case 'data-status':
                 if not self.chain:
                     print("Chain has not been created")
@@ -149,7 +149,7 @@ class Node(bookshop_pb2_grpc.NodeServiceServicer):
                     print("No books in stock")
                 else:
                     for i, book in enumerate(response.books):
-                        print("{:d}) {} = {:.2f} ({})".format(i+1, book.book, book.price, "dirty" if book.dirty else "clean"))
+                        print("{:d}) {} = {:.2f} (v{:d}, {})".format(i+1, book.book, book.price, book.version, "dirty" if book.dirty else "clean"))
             case 'remove-head':
                 if not self.chain:
                     print("Chain has not been created")
@@ -240,7 +240,8 @@ class DataStore(bookshop_pb2_grpc.DatastoreServiceServicer):
         print(f"Started Node-{node.node_id}-PS{process_id}")
 
     def Write(self, request, context):
-        entry = bookshop_pb2.Book(book = request.book, price = request.price, dirty = True)
+        version = self.books[request.book].version + 1 if request.book in self.books else 1
+        entry = bookshop_pb2.Book(book = request.book, price = request.price, dirty = True, version = version)
         self.books[request.book] = entry # add dirty entry to current store
         for datastore in self.tail():
             with grpc.insecure_channel(datastore.address) as channel:
