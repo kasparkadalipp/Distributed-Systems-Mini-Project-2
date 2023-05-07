@@ -1,0 +1,79 @@
+syntax = "proto3";
+
+package bookshop;
+
+service NodeService {
+  // broadcasted to all nodes after creation of new chain
+  rpc BroadcastChain (BroadcastChainRequest) returns (BroadcastChainResponse) {}
+
+  // broadcasted to all nodes indicating that current head should be removed from the chain
+  rpc BroadcastRemoveHead (BroadcastRemoveHeadRequest) returns (BroadcastRemoveHeadResponse) {}
+
+  // broadcasted to all nodes after recently removed head has been restored and can be added back to the chain
+  rpc BroadcastRestoreHead (BroadcastRestoreHeadRequest) returns (BroadcastRestoreHeadResponse) {}
+}
+
+message BroadcastChainRequest {
+  repeated Datastore chain = 1;
+}
+
+message BroadcastChainResponse {}
+
+message BroadcastRemoveHeadRequest {}
+message BroadcastRemoveHeadResponse {}
+
+message BroadcastRestoreHeadRequest {}
+message BroadcastRestoreHeadResponse {}
+
+message Datastore {
+  uint64 node_id = 1;
+  uint64 process_id = 2;
+  string address = 3;
+}
+
+service DatastoreService {
+  rpc Write(WriteRequest) returns (WriteResponse) {}
+  rpc Read(ReadRequest) returns (ReadResponse) {}
+  rpc List(ListRequest) returns (ListResponse) {}
+
+  // request to datastore to sync up and re-add itself as master
+  rpc RestoreHead (RestoreHeadRequest) returns (RestoreHeadResponse) {}
+}
+
+message WriteRequest {
+  string book = 1;
+  float price = 2;
+}
+
+message WriteResponse {
+  Book book = 1;
+}
+
+message ReadRequest {
+  repeated string books = 1;
+  bool allow_dirty = 2;
+}
+
+message ReadResponse {
+  repeated Book books = 1;
+}
+
+message ListRequest {
+  bool allow_dirty = 2;
+}
+
+message ListResponse {
+  repeated Book books = 1;
+}
+
+message RestoreHeadRequest {}
+
+message RestoreHeadResponse {
+  bool successful = 1;
+}
+
+message Book {
+  string book = 1;
+  float price = 2;
+  bool dirty = 3;
+}
