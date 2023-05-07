@@ -24,3 +24,15 @@ GRPC protocol classes can be generated using following command:
 ```
 python -m grpc_tools.protoc -I . --python_out=. --grpc_python_out=. bookshop.proto
 ```
+
+### Nodes
+
+Nodes can be started with following command:
+
+```
+python node.py port [etcd_host:etcd_port]
+```
+
+`etcd` host and port can be omitted in which case `localhost:2379` will be used.
+
+Note, there is no limitation for the number of nodes which are connecting.
