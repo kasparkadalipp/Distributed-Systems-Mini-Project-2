@@ -1,14 +1,13 @@
 import sys
-import threading
+import concurrent
+import random
+import socket
+
+import etcd3
+import grpc
 
 import bookshop_pb2
 import bookshop_pb2_grpc
-import concurrent
-import etcd3
-import random
-import socket
-import grpc
-import itertools
 
 # Hackish way to get the address to bind to.
 # Error prone, as computers tend to have multiple interface,
@@ -35,13 +34,13 @@ class Etcd():
             increment_successful = self.etcd.replace(
                 '/node_counter', str(counter), str(counter + 1))
         return counter
-    
+
     def register_node(self, node_id, address):
         self.etcd.put(f"/nodes/{node_id}", address)
-    
+
     def register_datastore(self, node_id, process_id, address):
         self.etcd.put(f"/datastores/{node_id}/{process_id}", address)
-    
+
     def nodes(self):
         """Returns all nodes registered in the cluster as a tuple containing the node id and the address"""
         for address, meta in self.etcd.get_prefix("/nodes/"):
@@ -165,7 +164,7 @@ class Node(bookshop_pb2_grpc.NodeServiceServicer):
                     concurrent.futures.wait(futures, timeout=self.timeout)
                 for channel in channels:
                     channel.close()
-                print(f"Broadcasted removal of head")
+                print("Broadcasted removal of head")
             case 'restore-head':
                 if not self.chain:
                     print("Chain has not been created")
@@ -239,7 +238,7 @@ class DataStore(bookshop_pb2_grpc.DatastoreServiceServicer):
         self.server.start()
         node.etcd.register_datastore(node.node_id, process_id, self.address)
         print(f"Started Node-{node.node_id}-PS{process_id}")
-    
+
     def Write(self, request, context):
         entry = bookshop_pb2.Book(book = request.book, price = request.price, dirty = True)
         self.books[request.book] = entry # add dirty entry to current store
@@ -287,7 +286,7 @@ class DataStore(bookshop_pb2_grpc.DatastoreServiceServicer):
             for channel in channels:
                 channel.close()
         return bookshop_pb2.RestoreHeadResponse(successful = successful)
-        
+
     def tail(self):
         tail = False
         for datastore in self.node.chain:
@@ -295,12 +294,6 @@ class DataStore(bookshop_pb2_grpc.DatastoreServiceServicer):
                 yield datastore
             elif datastore.address == self.address:
                 tail = True
-
-class Book:
-    def __init__(self, name, price):
-        self.name = name
-        self.price = price
-        self.isClean = False
 
 def main():
     if len(sys.argv) == 2:
