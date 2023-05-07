@@ -95,9 +95,9 @@ class Node(bookshop_pb2_grpc.NodeServiceServicer):
         match command[0].lower():
             case 'create-chain':
                 if self.chain:
-                    # TODO: Prompt user if he wants to re-create the chain
-                    print("Chain already created")
-                    return
+                    print("Chain already created, so you want to re-create it? [N/y]")
+                    if input().strip().lower() != "y":
+                        return
                 chain = list(self.etcd.datastores())
                 random.shuffle(chain)
                 chain_str = " -> ".join([f"Node{ds.node_id}-PS{ds.process_id}" for ds in chain])
