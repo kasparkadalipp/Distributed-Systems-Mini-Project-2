@@ -2,6 +2,7 @@ import sys
 import concurrent
 import random
 import socket
+import requests
 
 import etcd3
 import grpc
@@ -222,7 +223,11 @@ class Node(bookshop_pb2_grpc.NodeServiceServicer):
                 self.timeout = int(command[1])*60
                 print(f"Timeout = {self.timeout}min")
             case 'ml-list-recommend':
-                pass  # TODO
+                prompt = command[1]
+                API_URL = "https://www.books-ai.app/api/search"
+                params = {"q": f"{prompt}"}
+                for result in requests.post(API_URL, params=params).json()['results']:
+                    print(result)
             case x:
                 if x:
                     print(f"Unknown command '{x}'")
