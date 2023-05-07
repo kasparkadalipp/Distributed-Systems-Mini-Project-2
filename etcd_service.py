@@ -8,7 +8,7 @@ def get_host_ip():
     return socket.gethostbyname(hostname)
 
 
-class Etcd():
+class Etcd:
     def __init__(self, etcd_host, etcd_port):
         self.etcd = etcd3.client(host=etcd_host, port=etcd_port)
 
