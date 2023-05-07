@@ -154,6 +154,7 @@ class Node(bookshop_pb2_grpc.NodeServiceServicer):
                 if not self.chain:
                     print("Chain has not been created")
                     return
+                head = self.chain[0]
                 channels = [grpc.insecure_channel(address) for (node_id, address) in self.etcd.nodes()]
                 with concurrent.futures.ThreadPoolExecutor(max_workers=len(channels)) as executor:
                     futures = []
@@ -164,7 +165,7 @@ class Node(bookshop_pb2_grpc.NodeServiceServicer):
                     concurrent.futures.wait(futures, timeout=self.timeout)
                 for channel in channels:
                     channel.close()
-                print("Broadcasted removal of head")
+                print(f"Broadcasted removal of Node{head.node_id}-PS{head.process_id}")
             case 'restore-head':
                 if not self.chain:
                     print("Chain has not been created")
@@ -273,9 +274,20 @@ class DataStore(bookshop_pb2_grpc.DatastoreServiceServicer):
         return bookshop_pb2.ListResponse(books = response.books)
 
     def RestoreHead(self, request, context):
-        # TODO: Attempt to resync this datastore to become new master and set variable successful accordingly
-        successful = False
+        # Fetching data from current head
+        head = self.node.chain[0]
+        request = bookshop_pb2.ListRequest(allow_dirty = True)
+        with grpc.insecure_channel(head.address) as channel:
+            stub = bookshop_pb2_grpc.DatastoreServiceStub(channel)
+            response = stub.List(request, timeout = self.node.timeout)
+        diff_operations = 0 # we only allow recovering head if deviation of operations is no bigger than 5 operations.
+        dirty = False # if there are ongoing (i.e. dirty) write operations not confirmed by tail, we will not allow the restoration of the head.
+        for book in response.books:
+            diff_operations += abs(book.version - (self.books[book.book].version if book.book in self.books else 0))
+            dirty |= book.dirty
+        successful = diff_operations < 6 and not dirty
         if successful:
+            self.books = { book.book: book for book in response.books }
             channels = [grpc.insecure_channel(address) for (node_id, address) in self.node.etcd.nodes()]
             with concurrent.futures.ThreadPoolExecutor(max_workers=len(channels)) as executor:
                 futures = []
