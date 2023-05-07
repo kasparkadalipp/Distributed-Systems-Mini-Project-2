@@ -7,7 +7,11 @@ This project was implemented as part of the distributed systems course by follow
 
 ## Requirements
 
+Required applications:
+* [etcd](https://etcd.io/)
+
 Required python libraries:
+* [etcd3](https://pypi.org/project/etcd3/)
 * protobuf
 * grpcio
 
