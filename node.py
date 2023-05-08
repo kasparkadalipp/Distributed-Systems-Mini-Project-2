@@ -221,7 +221,7 @@ class Node(bookshop_pb2_grpc.NodeServiceServicer):
                 print("{} = {:.2f}".format(response.book.book, response.book.price))
             case 'time-out':
                 self.timeout = int(command[1])*60
-                print(f"Timeout = {self.timeout}min")
+                print(f"Timeout = {command[1]}min")
             case 'ml-list-recommend':
                 prompt = command[1]
                 API_URL = "https://www.books-ai.app/api/search"
