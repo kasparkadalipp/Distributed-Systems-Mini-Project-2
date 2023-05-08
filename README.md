@@ -66,4 +66,4 @@ python node.py port [etcd_host:etcd_port]
 Note, there is no limitation for the number of nodes which are connecting.
 
 
-![Architecture Blueprint.png](https://imgur.com/a/MelxP0n)
+![(Architecture Blueprint](https://imgur.com/a/MelxP0n))
