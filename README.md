@@ -64,3 +64,6 @@ python node.py port [etcd_host:etcd_port]
 `etcd_host:etcd_port` can be omitted in which case `localhost:2379` will be used.
 
 Note, there is no limitation for the number of nodes which are connecting.
+
+
+![Architecture Blueprint](Architecture Blueprint.png)
