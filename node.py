@@ -100,6 +100,11 @@ class Node(bookshop_pb2_grpc.NodeServiceServicer):
                     if input().strip().lower() != "y":
                         return
                 chain = list(self.etcd.datastores())
+                if len([ds.address for ds in chain]) != len(set([ds.address for ds in chain])):
+                    print("Inconsistent data in etcd, unable to create chain.")
+                    print("Possible reason: Nodes started on same host with overlapping port ranges.")
+                    print("Datastores allocate ports after node port, ensure proper port spacing.")
+                    return
                 random.shuffle(chain)
                 chain_str = " -> ".join([f"Node{ds.node_id}-PS{ds.process_id}" for ds in chain])
                 print(f"Broadcasting new chain:\n{chain_str}")
