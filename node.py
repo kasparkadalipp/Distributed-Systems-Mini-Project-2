@@ -3,7 +3,7 @@ import concurrent
 import random
 import socket
 import requests
-
+import re
 import etcd3
 import grpc
 
@@ -210,7 +210,7 @@ class Node(bookshop_pb2_grpc.NodeServiceServicer):
                 if not self.chain:
                     print("Chain has not been created")
                     return
-                price, book = [s[::-1].strip() for s in command[1][1:-1][::-1].split(",",1)]
+                book, price = re.match("(.+),(.+)", command[1]).groups()
                 price = float(price)
                 head = self.chain[0]
                 print(f"Write to Node{head.node_id}-PS{head.process_id}")
